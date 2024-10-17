@@ -3,10 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "next dev",
+    "dev:backend": "cd backend && node server.js",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start:frontend": "next start",
+    "start:backend": "cd backend && node server.js",
+    "lint": "next lint",
+    "install": "npm install && cd backend && npm install"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.18.1",
@@ -27,7 +32,8 @@
     "sqlite3": "^5.1.7",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "concurrently": "^8.0.1"
   },
   "devDependencies": {
     "@types/node": "^20",
