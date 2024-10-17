@@ -12,19 +12,25 @@ import { Switch } from '@/components/ui/switch'
 import CodeMirror from '@uiw/react-codemirror'
 import { sql } from '@codemirror/lang-sql'
 import { autocompletion } from '@codemirror/autocomplete'
+import { CompletionContext, Completion } from '@codemirror/autocomplete'
 
 interface SchemaInfo {
     [tableName: string]: {
         columns: { name: string; type: string }[];
-        data: any[];
+        data: Record<string, unknown>[];
         totalRows: number;
     };
+}
+
+interface QueryResult {
+    columns: string[];
+    rows: Record<string, unknown>[];
 }
 
 export default function SQLSandbox() {
     const [userId, setUserId] = useState('')
     const [sqlQuery, setSqlQuery] = useState('')
-    const [queryResult, setQueryResult] = useState(null)
+    const [queryResult, setQueryResult] = useState<QueryResult | null>(null)
     const [queryError, setQueryError] = useState<string | null>(null)
     const [sandboxUrl, setSandboxUrl] = useState('')
     const [schemaInfo, setSchemaInfo] = useState<SchemaInfo | null>(null)
@@ -57,8 +63,13 @@ export default function SQLSandbox() {
                 console.error('Failed to fetch schema:', result.error)
             }
         } catch (error) {
-            setFetchError(`Error fetching schema: ${error.message}`)
-            console.error('Error fetching schema:', error)
+            if (error instanceof Error) {
+                setFetchError(`Error fetching schema: ${error.message}`)
+                console.error('Error fetching schema:', error)
+            } else {
+                setFetchError('An unknown error occurred while fetching schema')
+                console.error('Unknown error fetching schema:', error)
+            }
         }
     }, [activeTable])
 
@@ -89,9 +100,9 @@ export default function SQLSandbox() {
         fetchSchemaInfo(userId)
     }
 
-    const handleQueryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setSqlQuery(e.target.value)
-    }
+    // const handleQueryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    //     setSqlQuery(e.target.value)
+    // }
 
     const handleRunQuery = async () => {
         try {
@@ -117,7 +128,11 @@ export default function SQLSandbox() {
                 setQueryResult(null)
             }
         } catch (error) {
-            setQueryError(`Error: ${error.message}`)
+            if (error instanceof Error) {
+                setQueryError(`Error: ${error.message}`)
+            } else {
+                setQueryError('An unknown error occurred')
+            }
             setQueryResult(null)
         }
     }
@@ -137,7 +152,11 @@ export default function SQLSandbox() {
                 setQueryError(`Error resetting database: ${result.error}`)
             }
         } catch (error) {
-            setQueryError(`Error resetting database: ${error.message}`)
+            if (error instanceof Error) {
+                setQueryError(`Error resetting database: ${error.message}`)
+            } else {
+                setQueryError('An unknown error occurred while resetting the database')
+            }
         }
     }
 
@@ -162,7 +181,7 @@ export default function SQLSandbox() {
         window.location.href = `mailto:?subject=SQL Sandbox Link&body=Here's your SQL Sandbox link: ${sandboxUrl}`
     }
 
-    const renderTableData = (tableInfo) => {
+    const renderTableData = (tableInfo: SchemaInfo[string]) => {
         if (!tableInfo || !tableInfo.data || !Array.isArray(tableInfo.data) || tableInfo.data.length === 0) {
             return (
                 <TableRow>
@@ -172,11 +191,13 @@ export default function SQLSandbox() {
                 </TableRow>
             );
         }
-
+    
         return tableInfo.data.map((row, index) => (
             <TableRow key={index}>
                 {tableInfo.columns.map(col => (
-                    <TableCell key={col.name}>{row[col.name] !== undefined ? String(row[col.name]) : 'N/A'}</TableCell>
+                    <TableCell key={col.name}>
+                        {row[col.name] !== undefined ? String(row[col.name]) : 'N/A'}
+                    </TableCell>
                 ))}
             </TableRow>
         ));
@@ -189,10 +210,11 @@ export default function SQLSandbox() {
         'GROUP BY', 'HAVING', 'ORDER BY', 'LIMIT', 'OFFSET', 'UNION', 'INTERSECT', 'EXCEPT'
     ]
 
-    const myCompletions = (context) => {
-        let before = context.matchBefore(/\w+/)
+    const myCompletions = (context: CompletionContext) => {
+        const before = context.matchBefore(/\w+/)
         if (!context.explicit && !before) return null
-        let options = []
+        
+        let options: Completion[] = []
 
         // Add SQL keywords
         options = options.concat(sqlKeywords.map(keyword => ({ label: keyword, type: "keyword" })))
@@ -345,7 +367,7 @@ export default function SQLSandbox() {
                                         {queryResult.rows.map((row, rowIndex) => (
                                             <TableRow key={rowIndex}>
                                                 {queryResult.columns.map((column, colIndex) => (
-                                                    <TableCell key={colIndex}>{row[column]}</TableCell>
+                                                    <TableCell key={colIndex}>{String(row[column])}</TableCell>
                                                 ))}
                                             </TableRow>
                                         ))}
