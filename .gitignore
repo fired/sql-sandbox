@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+backend/node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
@@ -38,3 +39,4 @@ next-env.d.ts
 /components/SQLSandbox-copy.tsx
 /components/SQLSandbox-copy-2.tsx
 /backend/user_dbs/*
+
