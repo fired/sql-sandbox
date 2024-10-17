@@ -14,6 +14,8 @@ import { sql } from '@codemirror/lang-sql'
 import { autocompletion } from '@codemirror/autocomplete'
 import { CompletionContext, Completion } from '@codemirror/autocomplete'
 
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || '${SERVER_URL}'
+
 interface SchemaInfo {
     [tableName: string]: {
         columns: { name: string; type: string }[];
@@ -41,7 +43,7 @@ export default function SQLSandbox() {
 
     const fetchSchemaInfo = useCallback(async (id: string) => {
         try {
-            const response = await fetch('http://localhost:3001/api/schema', {
+            const response = await fetch(`${SERVER_URL}/api/schema`, {
                 headers: { 'X-User-ID': id }
             })
             const result = await response.json()
@@ -106,7 +108,7 @@ export default function SQLSandbox() {
 
     const handleRunQuery = async () => {
         try {
-            const response = await fetch('http://localhost:3001/api/query', {
+            const response = await fetch(`${SERVER_URL}/api/query`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -139,7 +141,7 @@ export default function SQLSandbox() {
 
     const handleResetDatabase = async () => {
         try {
-            const response = await fetch('http://localhost:3001/api/reset', {
+            const response = await fetch(`${SERVER_URL}/api/reset`, {
                 method: 'POST',
                 headers: { 'X-User-ID': userId }
             })
