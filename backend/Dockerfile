@@ -20,4 +20,4 @@ RUN mkdir user_dbs && chmod 777 user_dbs
 EXPOSE 3001
 
 # Define the command to run the app
-CMD [ "node", "app.js" ]
+CMD [ "node", "server.js" ]
