@@ -39,3 +39,6 @@
 # user dbs
 /apps/api/user_dbs/*
 !/apps/api/user_dbs/.gitkeep
+
+# push
+p.ps1
