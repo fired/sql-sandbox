@@ -29,7 +29,6 @@ services:
     volumes:
       - ./apps/api/user_dbs:/app/user_dbs
 
-
 networks:
   app_network:
     name: app_network
