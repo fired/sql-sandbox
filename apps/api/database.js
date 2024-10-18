@@ -47,7 +47,7 @@ function executeQuery(userId, query) {
   return new Promise((resolve, reject) => {
     const db = getDb(userId);
     try {
-      console.log(`Executing query for user ${userId}: ${query.substring(0, 50)}...`);
+      // console.log(`Executing query for user ${userId}: ${query.substring(0, 50)}...`);
       const isSelectQuery = query.trim().toLowerCase().startsWith('select') || query.trim().toLowerCase().startsWith('pragma');
       
       if (isSelectQuery) {
@@ -105,14 +105,14 @@ function updateLastAccessed(userId) {
   const now = new Date().toISOString();
   const filePath = path.join(dbDir, `${userId}.last_accessed`);
   fs.writeFileSync(filePath, now);
-  console.log(`Updated last accessed time for user ${userId} at path: ${filePath}`);
+  // console.log(`Updated last accessed time for user ${userId} at path: ${filePath}`);
 }
 
 function getLastAccessed(userId) {
   const filePath = path.join(dbDir, `${userId}.last_accessed`);
   if (fs.existsSync(filePath)) {
     const content = fs.readFileSync(filePath, 'utf8');
-    console.log(`Last accessed time for user ${userId}: ${content}`);
+    // console.log(`Last accessed time for user ${userId}: ${content}`);
     return new Date(content);
   }
   console.log(`No last accessed file found for user ${userId}`);

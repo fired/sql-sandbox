@@ -36,4 +36,6 @@
 /apps/web/*.tsbuildinfo
 /apps/web/next-env.d.ts
 
+# user dbs
 /apps/api/user_dbs/*
+!/apps/api/user_dbs/.gitkeep
