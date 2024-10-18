@@ -10,6 +10,7 @@ services:
       - app_network
     environment:
       - NODE_ENV=production
+      - API_URL=http://api:${API_PORT:-3001}
 
   api:
     container_name: api
