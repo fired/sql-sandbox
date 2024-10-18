@@ -6,8 +6,6 @@ services:
       context: ./apps/web
       dockerfile: Dockerfile
     restart: always
-    # ports:
-    #   - 3000:3000
     networks:
       - app_network
     environment:
@@ -19,8 +17,6 @@ services:
       context: ./apps/api
       dockerfile: Dockerfile
     restart: always
-    # ports:
-    #   - ${API_PORT:-3001}:${API_PORT:-3001}
     networks:
       - app_network
     environment:
