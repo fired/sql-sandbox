@@ -5,6 +5,7 @@ const { createDb, executeQuery, resetDb, updateLastAccessed, getLastAccessed } =
 
 const app = express();
 const port = process.env.PORT || 3001;
+const host = '0.0.0.0';
 
 app.use(cors());
 app.use(express.json());
@@ -93,6 +94,6 @@ setInterval(() => {
     });
 }, 24 * 60 * 60 * 1000);
 
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+app.listen(port, host, () => {
+    console.log(`Server running at http://0.0.0.0:${port}`);
 });
