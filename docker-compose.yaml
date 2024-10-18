@@ -13,6 +13,21 @@ services:
     environment:
       - NODE_ENV=production
 
+  # api:
+  #   container_name: api
+  #   build:
+  #     context: ./apps/api
+  #     dockerfile: Dockerfile
+  #   restart: always
+  #   ports:
+  #     - ${API_PORT:-3001}:${API_PORT:-3001}
+  #   networks:
+  #     - app_network
+  #   environment:
+  #     - NODE_ENV=production
+  #     - PORT=${API_PORT:-3001}
+  #   volumes:
+  #     - api_user_dbs:/app/user_dbs
   api:
     container_name: api
     build:
@@ -27,12 +42,13 @@ services:
       - NODE_ENV=production
       - PORT=${API_PORT:-3001}
     volumes:
-      - api_user_dbs:/app/user_dbs
+      - ./apps/api/user_dbs:/app/user_dbs
+
 
 networks:
   app_network:
     name: app_network
     driver: bridge
 
-volumes:
-  api_user_dbs:
+# volumes:
+#   api_user_dbs:
