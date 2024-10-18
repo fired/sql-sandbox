@@ -1,0 +1,33 @@
+version: "3"
+services:
+  web:
+    container_name: web
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - app_network
+    environment:
+      - NODE_ENV=production
+
+  api:
+    container_name: api
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - ${API_PORT:-3001}:${API_PORT:-3001}
+    networks:
+      - app_network
+    environment:
+      - NODE_ENV=production
+      - PORT=${API_PORT:-3001}
+
+networks:
+  app_network:
+    name: app_network
+    driver: bridge

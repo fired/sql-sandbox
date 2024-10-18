@@ -14,7 +14,7 @@ import { sql } from '@codemirror/lang-sql'
 import { autocompletion } from '@codemirror/autocomplete'
 import { CompletionContext, Completion } from '@codemirror/autocomplete'
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://sql.notablonde.com'
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3001'
 
 interface SchemaInfo {
     [tableName: string]: {
