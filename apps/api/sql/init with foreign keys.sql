@@ -10,15 +10,18 @@ CREATE TABLE IF NOT EXISTS PC (
     speed DECIMAL(3, 2),
     ram INTEGER,
     hd INTEGER,
-    price INTEGER
+    price INTEGER,
+    FOREIGN KEY (model) REFERENCES Product(model)
 );
 
 CREATE TABLE IF NOT EXISTS Printer (
     model INTEGER PRIMARY KEY,
     color BOOLEAN,
     type TEXT,
-    price INTEGER
+    price INTEGER,
+    FOREIGN KEY (model) REFERENCES Product(model)
 );
+
 
 -- Insert data into Product table
 INSERT OR IGNORE INTO Product (maker, model, type) VALUES

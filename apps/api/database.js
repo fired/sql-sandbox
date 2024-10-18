@@ -1,4 +1,4 @@
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const fs = require('fs');
 const path = require('path');
 
@@ -13,72 +13,76 @@ function getDbPath(userId) {
 
 function createDb(userId) {
   return new Promise((resolve, reject) => {
-    const db = new sqlite3.Database(getDbPath(userId));
-    const initSql = fs.readFileSync(path.join(__dirname, 'sql', 'init.sql'), 'utf8');
-    db.exec(initSql, (err) => {
-      if (err) reject(err);
-      else resolve(db);
-    });
+    try {
+      const db = new Database(getDbPath(userId));
+      const initSql = fs.readFileSync(path.join(__dirname, 'sql', 'init.sql'), 'utf8');
+      db.exec(initSql);
+      db.close();
+      resolve();
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 
 function getDb(userId) {
-  return new sqlite3.Database(getDbPath(userId));
+  return new Database(getDbPath(userId));
 }
 
 function executeQuery(userId, query) {
   return new Promise((resolve, reject) => {
     const db = getDb(userId);
-    db.all(query, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows);
+    try {
+      const isSelectQuery = query.trim().toLowerCase().startsWith('select') || query.trim().toLowerCase().startsWith('pragma');
+      
+      if (isSelectQuery) {
+        const stmt = db.prepare(query);
+        const rows = stmt.all();
+        resolve(Array.isArray(rows) ? rows : [rows]);
+      } else {
+        const stmt = db.prepare(query);
+        const info = stmt.run();
+        resolve({ 
+          changes: info.changes, 
+          lastInsertRowid: info.lastInsertRowid 
+        });
+      }
+    } catch (err) {
+      console.error('Query execution error:', err);
+      reject(err);
+    } finally {
       db.close();
-    });
+    }
   });
 }
 
 function resetDb(userId) {
-    const dbPath = getDbPath(userId);
-  
-    return new Promise((resolve, reject) => {
-      const db = new sqlite3.Database(dbPath);
-  
-      db.serialize(() => {
-        // Clear existing data by dropping tables
-        db.exec(
-          "DROP TABLE IF EXISTS Students; DROP TABLE IF EXISTS Courses; DROP TABLE IF EXISTS Enrollments;",
-          (dropErr) => {
-            if (dropErr) {
-              console.error("Error clearing tables:", dropErr);
-              reject(dropErr);
-              return;
-            }
-  
-            // Reapply the initial schema and data
-            const initSql = fs.readFileSync(path.join(__dirname, 'sql', 'init.sql'), 'utf8');
-            db.exec(initSql, (initErr) => {
-              if (initErr) {
-                console.error("Error initializing database:", initErr);
-                reject(initErr);
-              } else {
-                console.log("Database reset successfully.");
-                resolve();
-              }
-            });
-          }
-        );
-      });
-  
-      db.close((closeErr) => {
-        if (closeErr) {
-          console.error("Error closing database after reset:", closeErr);
-        }
-      });
-    });
+  const dbPath = getDbPath(userId);
+
+  try {
+    // Delete the existing database file
+    if (fs.existsSync(dbPath)) {
+      fs.unlinkSync(dbPath);
+    }
+
+    // Create a new database
+    const db = new Database(dbPath);
+
+    try {
+      // Read and execute the init.sql file
+      const initSql = fs.readFileSync(path.join(__dirname, 'sql', 'init.sql'), 'utf8');
+      db.exec(initSql);
+
+      console.log("Database reset successfully.");
+    } finally {
+      // Always close the database connection
+      db.close();
+    }
+  } catch (err) {
+    console.error("Error resetting database:", err);
+    throw err; // Re-throw the error to be caught by the calling function
   }
-  
-  
-  
+}
 
 function updateLastAccessed(userId) {
   const now = new Date().toISOString();

@@ -27,15 +27,19 @@ app.post('/api/query', async (req, res) => {
     const { query } = req.body;
     try {
         const result = await executeQuery(req.userId, query);
-        res.json({ success: true, data: result });
+        if (Array.isArray(result)) {
+            res.json({ success: true, data: result });
+        } else {
+            res.json({ success: true, changes: result.changes, lastInsertRowid: result.lastInsertRowid });
+        }
     } catch (error) {
         res.status(400).json({ success: false, error: error.message });
     }
 });
 
-app.post('/api/reset', async (req, res) => {
+app.post('/api/reset', (req, res) => {
     try {
-        await resetDb(req.userId);
+        resetDb(req.userId);
         res.json({ success: true, message: 'Database reset to default values successfully' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -50,20 +54,22 @@ app.get('/api/schema', async (req, res) => {
         for (const table of tables) {
             const columns = await executeQuery(req.userId, `PRAGMA table_info(${table.name})`);
             const data = await executeQuery(req.userId, `SELECT * FROM ${table.name} LIMIT 1000`);
-            const totalRows = await executeQuery(req.userId, `SELECT COUNT(*) as count FROM ${table.name}`);
+            const totalRowsResult = await executeQuery(req.userId, `SELECT COUNT(*) as count FROM ${table.name}`);
+            const totalRows = totalRowsResult[0]?.count || 0;
 
             schema[table.name] = {
-                columns: columns.map(col => ({
+                columns: Array.isArray(columns) ? columns.map(col => ({
                     name: col.name,
                     type: col.type
-                })),
-                data,
-                totalRows: totalRows[0].count
+                })) : [],
+                data: Array.isArray(data) ? data : [],
+                totalRows
             };
         }
 
         res.json({ success: true, data: schema });
     } catch (error) {
+        console.error('Schema fetch error:', error);
         res.status(400).json({ success: false, error: error.message });
     }
 });

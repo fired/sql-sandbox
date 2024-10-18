@@ -118,10 +118,17 @@ export default function SQLSandbox() {
             })
             const result = await response.json()
             if (result.success) {
-                setQueryResult({
-                    columns: Object.keys(result.data[0] || {}),
-                    rows: result.data
-                })
+                if (Array.isArray(result.data)) {
+                    setQueryResult({
+                        columns: Object.keys(result.data[0] || {}),
+                        rows: result.data
+                    })
+                } else {
+                    setQueryResult({
+                        columns: ['Changes', 'Last Insert Row ID'],
+                        rows: [{ Changes: result.changes, 'Last Insert Row ID': result.lastInsertRowid }]
+                    })
+                }
                 setQueryError(null)
                 // Refresh schema after running a query
                 await fetchSchemaInfo(userId)
