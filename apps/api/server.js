@@ -116,5 +116,5 @@ setInterval(() => {
 }, 24 * 60 * 60 * 1000);
 
 app.listen(port, host, () => {
-    console.log(`Server running at http://0.0.0.0:${port}`);
+    console.log(`Server running at http://${host}:${port}`);
 });
