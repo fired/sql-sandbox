@@ -2,17 +2,17 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
+# Install dependencies
 RUN npm install
 
+# Copy all other files
 COPY . .
 
+# Build the Next.js app
 RUN npm run build
 
-# EXPOSE 3000
-
 # Ensure Next.js listens on all interfaces
-ENV HOST 0.0.0.0
-
-CMD ["npm", "start"]
+CMD ["npm", "start", "-H", "0.0.0.0"]

@@ -9,7 +9,7 @@ services:
         NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
     restart: always
     ports:
-      - 3000:3000
+      - "${WEB_PORT:-3000}:${WEB_PORT:-3000}"  # Dynamically use the WEB_PORT environment variable
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
