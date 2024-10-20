@@ -5,7 +5,7 @@ const { createDb, executeQuery, resetDb, updateLastAccessed, getLastAccessed } =
 
 const app = express();
 const port = process.env.PORT || 3001;
-const host = '0.0.0.0';
+const host = process.env.HOST || 'localhost';
 
 app.use(cors());
 app.use(express.json());
