@@ -15,4 +15,4 @@ COPY . .
 RUN npm run build
 
 # Ensure Next.js listens on all interfaces
-CMD ["npm", "start", "-H", "0.0.0.0"]
+CMD ["npm", "start"]
