@@ -8,16 +8,14 @@ services:
       args:
         NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
     restart: always
-    healthcheck:
-      # test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://web:${WEB_PORT:-3000}']
-      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://web:3000']
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+    # healthcheck:
+    #   test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://web:${WEB_PORT:-3000}']
+    #   interval: 15s
+    #   timeout: 10s
+    #   retries: 5
+    #   start_period: 30s
     ports:
-      # - "${WEB_PORT:-3000}:${WEB_PORT:-3000}"  # Dynamically use the WEB_PORT environment variable
-      - 3000:3000
+      - "${WEB_PORT:-3000}:${WEB_PORT:-3000}"  # Dynamically use the WEB_PORT environment variable
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
@@ -27,23 +25,20 @@ services:
     build:
       context: ./apps/api
       dockerfile: Dockerfile
-      # args:
-      #   API_PORT: ${API_PORT:-3001}
+      args:
+        API_PORT: ${API_PORT:-3001}
     restart: always
-    healthcheck:
-      # test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://api:${API_PORT:-3001}']
-      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://api:3001']
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+    # healthcheck:
+    #   test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://api:${API_PORT:-3001}']
+    #   interval: 15s
+    #   timeout: 10s
+    #   retries: 5
+    #   start_period: 30s
     ports:
-      # - ${API_PORT:-3001}:${API_PORT:-3001}
-      - 3001:3001
+      - ${API_PORT:-3001}:${API_PORT:-3001}
     environment:
       - NODE_ENV=production
-      # - PORT=${API_PORT:-3001}
-      - PORT=3001
+      - PORT=${API_PORT:-3001}
     command: "node server.js"  # Ensure server binds to 0.0.0.0
     volumes:
       - ./apps/api/user_dbs:/app/user_dbs
