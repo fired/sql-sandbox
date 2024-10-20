@@ -24,6 +24,27 @@ app.use(async (req, res, next) => {
     next();
 });
 
+// Health check endpoint
+app.get('/health', async (req, res) => {
+    const healthCheck = {
+        uptime: process.uptime(),
+        message: 'OK',
+        timestamp: Date.now()
+    };
+
+    try {
+        // Check database connection
+        await executeQuery(uuidv4(), 'SELECT 1');
+        healthCheck.database = 'Connected';
+
+        res.status(200).json(healthCheck);
+    } catch (error) {
+        healthCheck.message = error.message;
+        healthCheck.database = 'Disconnected';
+        res.status(503).json(healthCheck);
+    }
+});
+
 app.post('/api/query', async (req, res) => {
     const { query } = req.body;
     try {
