@@ -13,7 +13,7 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
-    command: "next start -H 0.0.0.0"  # Ensure binding to 0.0.0.0
+    # command: "next start -H 0.0.0.0"  # Ensure binding to 0.0.0.0
 
   api:
     container_name: api
