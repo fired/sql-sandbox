@@ -41,6 +41,7 @@ export default function SQLSandbox() {
     const [autoRefresh, setAutoRefresh] = useState(false)
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null)
     const [activeTable, setActiveTable] = useState<string | null>(null)
+    const [emailAddress, setEmailAddress] = useState('')
 
     const fetchSchemaInfo = useCallback(async (id: string) => {
         try {
@@ -187,9 +188,29 @@ export default function SQLSandbox() {
         alert('Sandbox URL copied to clipboard!')
     }
 
-    const emailSandboxUrl = () => {
-        window.location.href = `mailto:?subject=SQL Sandbox Link&body=Here's your SQL Sandbox link: ${sandboxUrl}`
-    }
+    const sendEmailWithSandboxUrl = async () => {
+        try {
+            const response = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ to: emailAddress, sandboxUrl }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Email sent successfully!');
+                setEmailAddress(''); // Clear the email input after successful send
+            } else {
+                alert('Failed to send email. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error sending email:', error);
+            alert('An error occurred while sending the email. Please try again.');
+        }
+    };
 
     const renderTableData = (tableInfo: SchemaInfo[string]) => {
         if (!tableInfo || !tableInfo.data || !Array.isArray(tableInfo.data) || tableInfo.data.length === 0) {
@@ -399,9 +420,17 @@ export default function SQLSandbox() {
                         <Button onClick={copyToClipboard} className="flex items-center">
                             <Copy className="mr-2 h-4 w-4" /> Copy
                         </Button>
-                        <Button onClick={emailSandboxUrl} className="flex items-center">
-                            <Mail className="mr-2 h-4 w-4" /> Email
+                        <Input
+                            type="email"
+                            placeholder="Enter email address"
+                            value={emailAddress}
+                            onChange={(e) => setEmailAddress(e.target.value)}
+                            className="flex-grow"
+                        />
+                        <Button onClick={sendEmailWithSandboxUrl} className="flex items-center">
+                            <Mail className="mr-2 h-4 w-4" /> Send Email
                         </Button>
+
                     </div>
                     <div className="flex items-start space-x-2 text-yellow-600">
                         <AlertCircle className="h-5 w-5 mt-0.5" />

@@ -30,7 +30,8 @@ services:
       context: ./apps/web
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
+        - NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
+        - RESEND_API_KEY: ${RESEND_API_KEY}
     restart: unless-stopped
     ports:
       - ${WEB_PORT:-3001}:3000
