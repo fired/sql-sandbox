@@ -14,17 +14,17 @@ This repository contains a SQL sandbox environment for practicing and experiment
 1. Clone this repository:
    
    git clone https://github.com/fired/sql-sandbox.git
-   
 
+   
 2. Navigate to the project directory:
    
    cd sql-sandbox
 
-## Usage
+   
+4. Run Docker Compose
 
-1. Connect to the database using your preferred SQL client.
-2. Start writing and executing SQL queries against the provided sample datasets.
-3. Experiment with different SQL commands and techniques.
+   docker-compose -f docker-compose.coolify.yaml up --build
+
 
 ## Sample Datasets
 
