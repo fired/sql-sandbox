@@ -187,10 +187,6 @@ export default function SQLSandbox() {
         alert('Sandbox URL copied to clipboard!')
     }
 
-    const emailSandboxUrl = () => {
-        window.location.href = `mailto:?subject=SQL Sandbox Link&body=Here's your SQL Sandbox link: ${sandboxUrl}`
-    }
-
     const renderTableData = (tableInfo: SchemaInfo[string]) => {
         if (!tableInfo || !tableInfo.data || !Array.isArray(tableInfo.data) || tableInfo.data.length === 0) {
             return (
