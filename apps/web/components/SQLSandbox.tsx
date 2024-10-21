@@ -190,7 +190,8 @@ export default function SQLSandbox() {
 
     const sendEmailWithSandboxUrl = async () => {
         try {
-          console.log('Sending email to:', emailAddress);
+          console.log('Initiating email send');
+          console.log('Email address:', emailAddress);
           console.log('Sandbox URL:', sandboxUrl);
           
           const response = await fetch('/api/send-email', {
@@ -202,17 +203,21 @@ export default function SQLSandbox() {
           });
     
           console.log('Response status:', response.status);
+          console.log('Response headers:', Object.fromEntries(response.headers));
+          
           const result = await response.json();
           console.log('Response data:', result);
     
           if (result.success) {
+            console.log('Email sent successfully');
             alert('Email sent successfully!');
-            setEmailAddress(''); // Clear the email input after successful send
+            setEmailAddress('');
           } else {
+            console.error('Failed to send email:', result.error);
             alert(`Failed to send email. Error: ${result.error}`);
           }
         } catch (error) {
-          console.error('Error sending email:', error);
+          console.error('Error in sendEmailWithSandboxUrl:', error);
           alert('An error occurred while sending the email. Please check the console for details.');
         }
       };
