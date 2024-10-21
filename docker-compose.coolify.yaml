@@ -39,6 +39,7 @@ services:
       - WEB_PORT=${WEB_PORT:-3001}
       - NODE_ENV=production
       - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
+      - RESEND_API_KEY=${RESEND_API_KEY}
     depends_on:
       api:
         condition: service_healthy
