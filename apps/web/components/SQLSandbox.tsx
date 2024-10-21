@@ -404,6 +404,7 @@ export default function SQLSandbox() {
                     </div>
                 </CardContent>
             </Card>
+            <p className="text-xs sm:text-sm text-gray-300" style={{textAlign: 'center', paddingTop: '3px'}}><a href='https://blond.dev'>blond.dev</a></p>
         </div>
     )
 }
