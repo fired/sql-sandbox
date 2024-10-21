@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 import { z } from 'zod';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+console.log(process.env.RESEND_API_KEY)
 
 // Define the expected shape of the request body
 const emailSchema = z.object({
