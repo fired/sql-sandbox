@@ -190,27 +190,32 @@ export default function SQLSandbox() {
 
     const sendEmailWithSandboxUrl = async () => {
         try {
-            const response = await fetch('/api/send-email', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ to: emailAddress, sandboxUrl }),
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                alert('Email sent successfully!');
-                setEmailAddress(''); // Clear the email input after successful send
-            } else {
-                alert('Failed to send email. Please try again.');
-            }
+          console.log('Sending email to:', emailAddress);
+          console.log('Sandbox URL:', sandboxUrl);
+          
+          const response = await fetch('/api/send-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ to: emailAddress, sandboxUrl }),
+          });
+    
+          console.log('Response status:', response.status);
+          const result = await response.json();
+          console.log('Response data:', result);
+    
+          if (result.success) {
+            alert('Email sent successfully!');
+            setEmailAddress(''); // Clear the email input after successful send
+          } else {
+            alert(`Failed to send email. Error: ${result.error}`);
+          }
         } catch (error) {
-            console.error('Error sending email:', error);
-            alert('An error occurred while sending the email. Please try again.');
+          console.error('Error sending email:', error);
+          alert('An error occurred while sending the email. Please check the console for details.');
         }
-    };
+      };
 
     const renderTableData = (tableInfo: SchemaInfo[string]) => {
         if (!tableInfo || !tableInfo.data || !Array.isArray(tableInfo.data) || tableInfo.data.length === 0) {
