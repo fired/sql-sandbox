@@ -246,12 +246,12 @@ export default function SQLSandbox() {
     }
 
     return (
-        <div className="container mx-auto p-4">
+        <div className="container mx-auto p-2 sm:p-4">
             <Card className="mb-4">
                 <CardHeader>
-                    <CardTitle className="flex justify-between items-center">
-                        <span>Database Schema</span>
-                        <div className="flex items-center space-x-4">
+                    <CardTitle className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                        <span className="mb-2 sm:mb-0">Database Schema</span>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                             <div className="flex items-center space-x-2">
                                 <Switch
                                     checked={autoRefresh}
@@ -260,7 +260,7 @@ export default function SQLSandbox() {
                                 />
                                 <label htmlFor="auto-refresh" className="text-sm">Auto Refresh</label>
                             </div>
-                            <Button onClick={handleManualRefresh} size="sm">
+                            <Button onClick={handleManualRefresh} size="sm" className="w-full sm:w-auto">
                                 <RefreshCw className="mr-2 h-4 w-4" /> Refresh Now
                             </Button>
                         </div>
@@ -284,7 +284,7 @@ export default function SQLSandbox() {
                                     <TabsTrigger
                                         key={tableName}
                                         value={tableName}
-                                        className="flex-grow text-center px-2 py-1 truncate"
+                                        className="flex-grow text-center px-2 py-1 truncate text-xs sm:text-sm"
                                     >
                                         {tableName}
                                     </TabsTrigger>
@@ -298,7 +298,7 @@ export default function SQLSandbox() {
                                                 <TableHeader>
                                                     <TableRow>
                                                         {tableInfo.columns.map(col => (
-                                                            <TableHead key={col.name} className="bg-gray-100 sticky top-0">
+                                                            <TableHead key={col.name} className="bg-gray-100 sticky top-0 text-xs sm:text-sm">
                                                                 {col.name} ({col.type})
                                                             </TableHead>
                                                         ))}
@@ -306,7 +306,7 @@ export default function SQLSandbox() {
                                                 </TableHeader>
                                             </Table>
                                         </div>
-                                        <div className="max-h-[400px] overflow-y-auto">
+                                        <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
                                             <Table>
                                                 <TableBody>
                                                     {renderTableData(tableInfo)}
@@ -314,7 +314,7 @@ export default function SQLSandbox() {
                                             </Table>
                                         </div>
                                     </div>
-                                    <p className="mt-2 text-sm text-gray-500">
+                                    <p className="mt-2 text-xs sm:text-sm text-gray-500">
                                         Showing {tableInfo.data.length} of {tableInfo.totalRows} rows
                                     </p>
                                 </TabsContent>
@@ -337,18 +337,18 @@ export default function SQLSandbox() {
                         </label>
                         <CodeMirror
                             value={sqlQuery}
-                            height="200px"
+                            height="150px"
                             extensions={[sql(), autocompletion({ override: [myCompletions] })]}
                             onChange={(value) => setSqlQuery(value)}
-                            className="border rounded"
+                            className="border rounded text-sm"
                         />
                     </div>
-                    <div className="flex space-x-2 mb-4">
-                        <Button onClick={handleRunQuery}>Run Query</Button>
-                        <Button onClick={handleResetDatabase} variant="outline">
+                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-4">
+                        <Button onClick={handleRunQuery} className="w-full sm:w-auto">Run Query</Button>
+                        <Button onClick={handleResetDatabase} variant="outline" className="w-full sm:w-auto">
                             <RefreshCw className="mr-2 h-4 w-4" /> Reset Database
                         </Button>
-                        <Button onClick={handleNewDatabase} variant="outline">
+                        <Button onClick={handleNewDatabase} variant="outline" className="w-full sm:w-auto">
                             Create New Database
                         </Button>
                     </div>
@@ -365,7 +365,7 @@ export default function SQLSandbox() {
                                     <TableHeader>
                                         <TableRow>
                                             {queryResult.columns.map((column, index) => (
-                                                <TableHead key={index}>{column}</TableHead>
+                                                <TableHead key={index} className="text-xs sm:text-sm">{column}</TableHead>
                                             ))}
                                         </TableRow>
                                     </TableHeader>
@@ -373,7 +373,7 @@ export default function SQLSandbox() {
                                         {queryResult.rows.map((row, rowIndex) => (
                                             <TableRow key={rowIndex}>
                                                 {queryResult.columns.map((column, colIndex) => (
-                                                    <TableCell key={colIndex}>{String(row[column])}</TableCell>
+                                                    <TableCell key={colIndex} className="text-xs sm:text-sm">{String(row[column])}</TableCell>
                                                 ))}
                                             </TableRow>
                                         ))}
@@ -390,15 +390,15 @@ export default function SQLSandbox() {
                     <CardTitle>Share Your Sandbox</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex items-center space-x-2 mb-4">
-                        <Input value={sandboxUrl} readOnly className="flex-grow" />
-                        <Button onClick={copyToClipboard} className="flex items-center">
+                    <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 mb-4">
+                        <Input value={sandboxUrl} readOnly className="w-full sm:flex-grow" />
+                        <Button onClick={copyToClipboard} className="w-full sm:w-auto flex items-center justify-center">
                             <Copy className="mr-2 h-4 w-4" /> Copy
                         </Button>
                     </div>
                     <div className="flex items-start space-x-2 text-yellow-600">
-                        <AlertCircle className="h-5 w-5 mt-0.5" />
-                        <p className="text-sm">
+                        <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                        <p className="text-xs sm:text-sm">
                             Note: This link provides access to your sandbox. Share it only with those you want to have access.
                         </p>
                     </div>
