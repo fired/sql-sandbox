@@ -30,6 +30,7 @@ FROM node:20-bullseye-slim
 RUN apt-get update && apt-get install -y \
     sqlite3 \
     libsqlite3-dev \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -46,7 +47,7 @@ COPY --from=builder /build/database.js ./
 COPY --from=builder /build/server.js ./
 COPY --from=builder /build/sql ./sql
 
-# EXPOSE 3001
+EXPOSE 3001
 
 # Ensure API listens on all interfaces
 ENV HOST 0.0.0.0
