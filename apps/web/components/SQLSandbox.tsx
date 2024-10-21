@@ -41,7 +41,6 @@ export default function SQLSandbox() {
     const [autoRefresh, setAutoRefresh] = useState(false)
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null)
     const [activeTable, setActiveTable] = useState<string | null>(null)
-    const [emailAddress, setEmailAddress] = useState('')
 
     const fetchSchemaInfo = useCallback(async (id: string) => {
         try {
@@ -188,39 +187,9 @@ export default function SQLSandbox() {
         alert('Sandbox URL copied to clipboard!')
     }
 
-    const sendEmailWithSandboxUrl = async () => {
-        try {
-          console.log('Initiating email send');
-          console.log('Email address:', emailAddress);
-          console.log('Sandbox URL:', sandboxUrl);
-          
-          const response = await fetch('/api/send-email', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ to: emailAddress, sandboxUrl }),
-          });
-    
-          console.log('Response status:', response.status);
-          console.log('Response headers:', Object.fromEntries(response.headers));
-          
-          const result = await response.json();
-          console.log('Response data:', result);
-    
-          if (result.success) {
-            console.log('Email sent successfully');
-            alert('Email sent successfully!');
-            setEmailAddress('');
-          } else {
-            console.error('Failed to send email:', result.error);
-            alert(`Failed to send email. Error: ${result.error}`);
-          }
-        } catch (error) {
-          console.error('Error in sendEmailWithSandboxUrl:', error);
-          alert('An error occurred while sending the email. Please check the console for details.');
-        }
-      };
+    const emailSandboxUrl = () => {
+        window.location.href = `mailto:?subject=SQL Sandbox Link&body=Here's your SQL Sandbox link: ${sandboxUrl}`
+    }
 
     const renderTableData = (tableInfo: SchemaInfo[string]) => {
         if (!tableInfo || !tableInfo.data || !Array.isArray(tableInfo.data) || tableInfo.data.length === 0) {
@@ -430,17 +399,6 @@ export default function SQLSandbox() {
                         <Button onClick={copyToClipboard} className="flex items-center">
                             <Copy className="mr-2 h-4 w-4" /> Copy
                         </Button>
-                        <Input
-                            type="email"
-                            placeholder="Enter email address"
-                            value={emailAddress}
-                            onChange={(e) => setEmailAddress(e.target.value)}
-                            className="flex-grow"
-                        />
-                        <Button onClick={sendEmailWithSandboxUrl} className="flex items-center">
-                            <Mail className="mr-2 h-4 w-4" /> Send Email
-                        </Button>
-
                     </div>
                     <div className="flex items-start space-x-2 text-yellow-600">
                         <AlertCircle className="h-5 w-5 mt-0.5" />
