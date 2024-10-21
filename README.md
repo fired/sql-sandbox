@@ -21,7 +21,13 @@ This repository contains a SQL sandbox environment for practicing and experiment
    cd sql-sandbox
 
    
-4. Run Docker Compose
+4. Create a .env in root directory of app
+   ```NEXT_PUBLIC_SERVER_URL=http://localhost:3001
+API_PORT=3001
+WEB_PORT=3000```
+
+   
+6. Run Docker Compose
 
    docker-compose -f docker-compose.coolify.yaml up --build
 
