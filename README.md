@@ -13,23 +13,25 @@ This repository contains a SQL sandbox environment for practicing and experiment
 
 1. Clone this repository:
    
-   git clone https://github.com/fired/sql-sandbox.git
+   `git clone https://github.com/fired/sql-sandbox.git`
 
    
 2. Navigate to the project directory:
    
-   cd sql-sandbox
+   `cd sql-sandbox`
 
    
 4. Create a .env in root directory of app
-   ```NEXT_PUBLIC_SERVER_URL=http://localhost:3001
-API_PORT=3001
-WEB_PORT=3000```
+   ```
+   NEXT_PUBLIC_SERVER_URL=http://localhost:3001
+   API_PORT=3001
+   WEB_PORT=3000
+   ```
 
    
 6. Run Docker Compose
 
-   docker-compose -f docker-compose.coolify.yaml up --build
+   `docker-compose -f docker-compose.coolify.yaml up --build`
 
 
 ## Sample Datasets
