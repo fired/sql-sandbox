@@ -15,7 +15,7 @@ import { autocompletion } from '@codemirror/autocomplete'
 import { CompletionContext, Completion } from '@codemirror/autocomplete'
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3001'
-console.log('SERVER_URL:', SERVER_URL);
+// console.log('SERVER_URL:', SERVER_URL);
 
 interface SchemaInfo {
     [tableName: string]: {
