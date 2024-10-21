@@ -1,30 +1,39 @@
--- Create the tables
-CREATE TABLE IF NOT EXISTS Product (
-    maker CHAR(1) NOT NULL,
-    model INTEGER PRIMARY KEY,
-    type TEXT NOT NULL
+-- Create the PRODUCT table
+CREATE TABLE PRODUCT (
+    MAKER CHAR(1),
+    MODEL INT,
+    TYPE VARCHAR(20)
 );
 
-CREATE TABLE IF NOT EXISTS PC (
-    model INTEGER PRIMARY KEY,
-    speed DECIMAL(3, 2),
-    ram INTEGER,
-    hd INTEGER,
-    price INTEGER,
-    FOREIGN KEY (model) REFERENCES Product(model)
+-- Create the PC table
+CREATE TABLE PC (
+    MODEL INT,
+    SPEED DECIMAL(3,2),
+    RAM INT,
+    HD INT,
+    PRICE DECIMAL(7,2)
 );
 
-CREATE TABLE IF NOT EXISTS Printer (
-    model INTEGER PRIMARY KEY,
-    color BOOLEAN,
-    type TEXT,
-    price INTEGER,
-    FOREIGN KEY (model) REFERENCES Product(model)
+-- Create the LAPTOP table
+CREATE TABLE LAPTOP (
+    MODEL INT,
+    SPEED DECIMAL(3,2),
+    RAM INT,
+    HD INT,
+    SCREEN DECIMAL(3,1),
+    PRICE DECIMAL(7,2)
 );
 
+-- Create the PRINTER table
+CREATE TABLE PRINTER (
+    MODEL INT,
+    COLOR BOOLEAN,
+    TYPE VARCHAR(20),
+    PRICE DECIMAL(7,2)
+);
 
--- Insert data into Product table
-INSERT OR IGNORE INTO Product (maker, model, type) VALUES
+-- Insert data into PRODUCT table
+INSERT INTO PRODUCT (MAKER, MODEL, TYPE) VALUES
 ('A', 1001, 'PC'),
 ('A', 1002, 'PC'),
 ('A', 1003, 'PC'),
@@ -57,7 +66,7 @@ INSERT OR IGNORE INTO Product (maker, model, type) VALUES
 ('H', 3007, 'PRINTER');
 
 -- Insert data into PC table
-INSERT OR IGNORE INTO PC (model, speed, ram, hd, price) VALUES
+INSERT INTO PC (MODEL, SPEED, RAM, HD, PRICE) VALUES
 (1001, 2.66, 1024, 250, 2114),
 (1002, 2.10, 512, 250, 995),
 (1003, 1.42, 512, 80, 478),
@@ -70,20 +79,23 @@ INSERT OR IGNORE INTO PC (model, speed, ram, hd, price) VALUES
 (1010, 2.80, 2048, 300, 770),
 (1011, 1.86, 2048, 160, 959),
 (1012, 2.80, 1024, 160, 649),
-(1013, 3.06, 512, 80, 529),
-(2001, 2.00, 2048, 240, 3673),
-(2002, 1.73, 1024, 80, 949),
-(2003, 1.80, 512, 60, 549),
-(2004, 2.00, 512, 60, 1150),
-(2005, 2.16, 1024, 120, 2500),
-(2006, 2.00, 2048, 80, 1700),
-(2007, 1.83, 1024, 120, 1429),
-(2008, 1.60, 1024, 100, 900),
-(2009, 1.60, 512, 80, 680),
-(2010, 2.00, 2048, 160, 2300);
+(1013, 3.06, 512, 80, 529);
 
--- Insert data into Printer table
-INSERT OR IGNORE INTO Printer (model, color, type, price) VALUES
+-- Insert data into LAPTOP table
+INSERT INTO LAPTOP (MODEL, SPEED, RAM, HD, SCREEN, PRICE) VALUES
+(2001, 2.00, 2048, 240, 20.1, 3673),
+(2002, 1.73, 1024, 80, 17.0, 949),
+(2003, 1.80, 512, 60, 15.4, 549),
+(2004, 2.00, 512, 60, 13.3, 1150),
+(2005, 2.16, 1024, 120, 17.0, 2500),
+(2006, 2.00, 2048, 80, 15.4, 1700),
+(2007, 1.83, 1024, 120, 13.3, 1429),
+(2008, 1.60, 1024, 100, 15.4, 900),
+(2009, 1.60, 512, 80, 14.1, 680),
+(2010, 2.00, 2048, 160, 15.4, 2300);
+
+-- Insert data into PRINTER table
+INSERT INTO PRINTER (MODEL, COLOR, TYPE, PRICE) VALUES
 (3001, TRUE, 'ink-jet', 99),
 (3002, FALSE, 'laser', 239),
 (3003, TRUE, 'laser', 899),

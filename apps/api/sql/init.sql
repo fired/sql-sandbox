@@ -1,23 +1,38 @@
--- Create the tables
+-- Create the Product table
 CREATE TABLE IF NOT EXISTS Product (
     maker CHAR(1) NOT NULL,
     model INTEGER PRIMARY KEY,
     type TEXT NOT NULL
 );
 
+-- Create the PC table
 CREATE TABLE IF NOT EXISTS PC (
     model INTEGER PRIMARY KEY,
     speed DECIMAL(3, 2),
     ram INTEGER,
     hd INTEGER,
-    price INTEGER
+    price INTEGER,
+    FOREIGN KEY (model) REFERENCES Product(model)
 );
 
+-- Create the Laptop table
+CREATE TABLE IF NOT EXISTS Laptop (
+    model INTEGER PRIMARY KEY,
+    speed DECIMAL(3, 2),
+    ram INTEGER,
+    hd INTEGER,
+    screen DECIMAL(3, 1),
+    price INTEGER,
+    FOREIGN KEY (model) REFERENCES Product(model)
+);
+
+-- Create the Printer table
 CREATE TABLE IF NOT EXISTS Printer (
     model INTEGER PRIMARY KEY,
     color BOOLEAN,
     type TEXT,
-    price INTEGER
+    price INTEGER,
+    FOREIGN KEY (model) REFERENCES Product(model)
 );
 
 -- Insert data into Product table
@@ -67,17 +82,20 @@ INSERT OR IGNORE INTO PC (model, speed, ram, hd, price) VALUES
 (1010, 2.80, 2048, 300, 770),
 (1011, 1.86, 2048, 160, 959),
 (1012, 2.80, 1024, 160, 649),
-(1013, 3.06, 512, 80, 529),
-(2001, 2.00, 2048, 240, 3673),
-(2002, 1.73, 1024, 80, 949),
-(2003, 1.80, 512, 60, 549),
-(2004, 2.00, 512, 60, 1150),
-(2005, 2.16, 1024, 120, 2500),
-(2006, 2.00, 2048, 80, 1700),
-(2007, 1.83, 1024, 120, 1429),
-(2008, 1.60, 1024, 100, 900),
-(2009, 1.60, 512, 80, 680),
-(2010, 2.00, 2048, 160, 2300);
+(1013, 3.06, 512, 80, 529);
+
+-- Insert data into Laptop table
+INSERT OR IGNORE INTO Laptop (model, speed, ram, hd, screen, price) VALUES
+(2001, 2.00, 2048, 240, 20.1, 3673),
+(2002, 1.73, 1024, 80, 17.0, 949),
+(2003, 1.80, 512, 60, 15.4, 549),
+(2004, 2.00, 512, 60, 13.3, 1150),
+(2005, 2.16, 1024, 120, 17.0, 2500),
+(2006, 2.00, 2048, 80, 15.4, 1700),
+(2007, 1.83, 1024, 120, 13.3, 1429),
+(2008, 1.60, 1024, 100, 15.4, 900),
+(2009, 1.60, 512, 80, 14.1, 680),
+(2010, 2.00, 2048, 160, 15.4, 2300);
 
 -- Insert data into Printer table
 INSERT OR IGNORE INTO Printer (model, color, type, price) VALUES
