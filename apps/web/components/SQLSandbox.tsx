@@ -7,12 +7,13 @@ import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AlertCircle, Copy, RefreshCw, LockKeyhole } from 'lucide-react'
+import { AlertCircle, Copy, RefreshCw, Play } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import CodeMirror from '@uiw/react-codemirror'
 import { sql } from '@codemirror/lang-sql'
 import { autocompletion } from '@codemirror/autocomplete'
 import { CompletionContext, Completion } from '@codemirror/autocomplete'
+import type { ViewUpdate } from '@codemirror/view';
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3001'
 // console.log('SERVER_URL:', SERVER_URL);
@@ -26,161 +27,225 @@ interface SchemaInfo {
 }
 
 interface QueryResult {
+    query: string;
     columns: string[];
     rows: Record<string, unknown>[];
 }
 
 export default function SQLSandbox() {
-    const [userId, setUserId] = useState('')
-    const [sqlQuery, setSqlQuery] = useState('')
-    const [queryResult, setQueryResult] = useState<QueryResult | null>(null)
-    const [queryError, setQueryError] = useState<string | null>(null)
-    const [sandboxUrl, setSandboxUrl] = useState('')
-    const [schemaInfo, setSchemaInfo] = useState<SchemaInfo | null>(null)
-    const [fetchError, setFetchError] = useState<string | null>(null)
-    const [autoRefresh, setAutoRefresh] = useState(false)
-    const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null)
-    const [activeTable, setActiveTable] = useState<string | null>(null)
+    const [userId, setUserId] = useState('');
+    const [sqlQuery, setSqlQuery] = useState('');
+    const [queryResults, setQueryResults] = useState<QueryResult[]>([]);
+    const [queryError, setQueryError] = useState<string | null>(null);
+    const [sandboxUrl, setSandboxUrl] = useState('');
+    const [schemaInfo, setSchemaInfo] = useState<SchemaInfo | null>(null);
+    const [fetchError, setFetchError] = useState<string | null>(null);
+    const [autoRefresh, setAutoRefresh] = useState(false);
+    const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+    const [activeTable, setActiveTable] = useState<string | null>(null);
+    const [activeQuery, setActiveQuery] = useState<string | null>(null);
+
 
     const fetchSchemaInfo = useCallback(async (id: string) => {
         try {
             const response = await fetch(`${SERVER_URL}/api/schema`, {
                 headers: { 'X-User-ID': id }
-            })
-            const result = await response.json()
+            });
+            const result = await response.json();
             if (result.success) {
-                setSchemaInfo(result.data)
-                setFetchError(null)
-                setLastRefreshTime(new Date())
-                // Set active table if not already set or if current active table no longer exists
+                setSchemaInfo(result.data);
+                setFetchError(null);
+                setLastRefreshTime(new Date());
                 if (!activeTable || !result.data[activeTable]) {
-                    const tables = Object.keys(result.data)
+                    const tables = Object.keys(result.data);
                     if (tables.length > 0) {
-                        setActiveTable(tables[0])
+                        setActiveTable(tables[0]);
                     } else {
-                        setActiveTable(null)
+                        setActiveTable(null);
                     }
                 }
             } else {
-                setFetchError(`Failed to fetch schema: ${result.error}`)
-                console.error('Failed to fetch schema:', result.error)
+                setFetchError(`Failed to fetch schema: ${result.error}`);
             }
         } catch (error) {
-            if (error instanceof Error) {
-                setFetchError(`Error fetching schema: ${error.message}`)
-                console.error('Error fetching schema:', error)
-            } else {
-                setFetchError('An unknown error occurred while fetching schema')
-                console.error('Unknown error fetching schema:', error)
-            }
+            setFetchError(`Error fetching schema: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
-    }, [activeTable])
+    }, [activeTable]);
 
     useEffect(() => {
-        const storedUserId = localStorage.getItem('sqlSandboxUserId')
-        const newUserId = storedUserId || uuidv4()
+        const storedUserId = localStorage.getItem('sqlSandboxUserId');
+        const newUserId = storedUserId || uuidv4();
         if (!storedUserId) {
-            localStorage.setItem('sqlSandboxUserId', newUserId)
+            localStorage.setItem('sqlSandboxUserId', newUserId);
         }
-        setUserId(newUserId)
-        setSandboxUrl(`${window.location.origin}/sandbox/${newUserId}`)
-        fetchSchemaInfo(newUserId)
-    }, [fetchSchemaInfo])
+        setUserId(newUserId);
+        setSandboxUrl(`${window.location.origin}/sandbox/${newUserId}`);
+        fetchSchemaInfo(newUserId);
+    }, [fetchSchemaInfo]);
 
     useEffect(() => {
         let intervalId: NodeJS.Timeout | null = null;
         if (autoRefresh) {
             intervalId = setInterval(() => {
-                fetchSchemaInfo(userId)
-            }, 5000) // Refresh every 5 seconds
+                fetchSchemaInfo(userId);
+            }, 5000);
         }
         return () => {
-            if (intervalId) clearInterval(intervalId)
-        }
-    }, [autoRefresh, userId, fetchSchemaInfo])
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [autoRefresh, userId, fetchSchemaInfo]);
 
     const handleManualRefresh = () => {
-        fetchSchemaInfo(userId)
-    }
+        fetchSchemaInfo(userId);
+    };
 
     // const handleQueryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     //     setSqlQuery(e.target.value)
     // }
+    // Function to split queries at semicolons, preserving semicolons inside quotes
+    const splitQueries = (text: string): string[] => {
+        const queries: string[] = [];
+        let currentQuery = '';
+        let inQuotes = false;
+        let quoteChar = '';
 
-    const handleRunQuery = async () => {
-        try {
-            const response = await fetch(`${SERVER_URL}/api/query`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': userId
-                },
-                body: JSON.stringify({ query: sqlQuery }),
-            })
-            const result = await response.json()
-            if (result.success) {
-                if (Array.isArray(result.data)) {
-                    setQueryResult({
-                        columns: Object.keys(result.data[0] || {}),
-                        rows: result.data
-                    })
-                } else {
-                    setQueryResult({
-                        columns: ['Changes', 'Last Insert Row ID'],
-                        rows: [{ Changes: result.changes, 'Last Insert Row ID': result.lastInsertRowid }]
-                    })
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+
+            if ((char === '"' || char === "'") && text[i - 1] !== '\\') {
+                if (!inQuotes) {
+                    inQuotes = true;
+                    quoteChar = char;
+                } else if (char === quoteChar) {
+                    inQuotes = false;
                 }
-                setQueryError(null)
-                // Refresh schema after running a query
-                await fetchSchemaInfo(userId)
+            }
+
+            if (char === ';' && !inQuotes) {
+                if (currentQuery.trim()) {
+                    queries.push(currentQuery.trim());
+                }
+                currentQuery = '';
             } else {
-                setQueryError(`Error: ${result.error}`)
-                setQueryResult(null)
+                currentQuery += char;
+            }
+        }
+
+        if (currentQuery.trim()) {
+            queries.push(currentQuery.trim());
+        }
+
+        return queries.filter(q => q.length > 0);
+    };
+
+    const handleEditorChange = (value: string) => {
+        setSqlQuery(value);
+        setActiveQuery(null);
+    };
+
+    const handleCursorActivity = (viewUpdate: ViewUpdate) => {
+        const selection = viewUpdate.state.selection.main;
+        if (selection.empty) {
+            const text = viewUpdate.state.doc.toString();
+            const queries = splitQueries(text);
+            let pos = 0;
+            for (const query of queries) {
+                const queryEnd = pos + query.length;
+                if (selection.from >= pos && selection.from <= queryEnd) {
+                    setActiveQuery(query);
+                    break;
+                }
+                pos = queryEnd + 1;
+            }
+        } else {
+            const selectedText = viewUpdate.state.sliceDoc(selection.from, selection.to);
+            setActiveQuery(selectedText);
+        }
+    };
+
+    const handleRunQuery = async (queryToRun?: string) => {
+        try {
+            if (!queryToRun) {
+                queryToRun = activeQuery || sqlQuery;
+            }
+
+            const queries = splitQueries(queryToRun);
+            const results: QueryResult[] = [];
+
+            for (const query of queries) {
+                const response = await fetch(`${SERVER_URL}/api/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-User-ID': userId
+                    },
+                    body: JSON.stringify({ query }),
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    if (Array.isArray(result.data)) {
+                        results.push({
+                            query,
+                            columns: Object.keys(result.data[0] || {}),
+                            rows: result.data
+                        });
+                    } else {
+                        results.push({
+                            query,
+                            columns: ['Changes', 'Last Insert Row ID'],
+                            rows: [{
+                                Changes: result.changes,
+                                'Last Insert Row ID': result.lastInsertRowid
+                            }]
+                        });
+                    }
+                } else {
+                    setQueryError(`Error in query "${query}": ${result.error}`);
+                    break;
+                }
+            }
+
+            if (results.length > 0) {
+                setQueryResults(results);
+                setQueryError(null);
+                await fetchSchemaInfo(userId);
             }
         } catch (error) {
-            if (error instanceof Error) {
-                setQueryError(`Error: ${error.message}`)
-            } else {
-                setQueryError('An unknown error occurred')
-            }
-            setQueryResult(null)
+            setQueryError(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            setQueryResults([]);
         }
-    }
+    };
 
     const handleResetDatabase = async () => {
         try {
             const response = await fetch(`${SERVER_URL}/api/reset`, {
                 method: 'POST',
                 headers: { 'X-User-ID': userId }
-            })
-            const result = await response.json()
+            });
+            const result = await response.json();
             if (result.success) {
-                setQueryError('Database reset successfully. You now have a fresh database.')
-                setQueryResult(null)
-                fetchSchemaInfo(userId)
+                setQueryError('Database reset successfully. You now have a fresh database.');
+                setQueryResults([]);
+                fetchSchemaInfo(userId);
             } else {
-                setQueryError(`Error resetting database: ${result.error}`)
+                setQueryError(`Error resetting database: ${result.error}`);
             }
         } catch (error) {
-            if (error instanceof Error) {
-                setQueryError(`Error resetting database: ${error.message}`)
-            } else {
-                setQueryError('An unknown error occurred while resetting the database')
-            }
+            setQueryError(`Error resetting database: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
-    }
+    };
 
     const handleNewDatabase = () => {
-        const newUserId = uuidv4()
-        localStorage.setItem('sqlSandboxUserId', newUserId)
-        setUserId(newUserId)
-        const newSandboxUrl = `${window.location.origin}/sandbox/${newUserId}`
-        setSandboxUrl(newSandboxUrl)
-        fetchSchemaInfo(newUserId)
-        setQueryError('New database created. You can start with a fresh database.')
-        setQueryResult(null)
-        window.location.href = newSandboxUrl
-    }
+        const newUserId = uuidv4();
+        localStorage.setItem('sqlSandboxUserId', newUserId);
+        setUserId(newUserId);
+        setSandboxUrl(`${window.location.origin}/sandbox/${newUserId}`);
+        fetchSchemaInfo(newUserId);
+        setQueryError('New database created. You can start with a fresh database.');
+        setQueryResults([]);
+        window.location.href = `/sandbox/${newUserId}`;
+    };
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(sandboxUrl)
@@ -197,7 +262,7 @@ export default function SQLSandbox() {
                 </TableRow>
             );
         }
-    
+
         return tableInfo.data.map((row, index) => (
             <TableRow key={index}>
                 {tableInfo.columns.map(col => (
@@ -217,24 +282,26 @@ export default function SQLSandbox() {
     ]
 
     const myCompletions = (context: CompletionContext) => {
-        const before = context.matchBefore(/\w+/)
-        if (!context.explicit && !before) return null
-        
-        let options: Completion[] = []
+        const before = context.matchBefore(/\w+/);
+        if (!context.explicit && !before) return null;
 
-        // Add SQL keywords
-        options = options.concat(sqlKeywords.map(keyword => ({ label: keyword, type: "keyword" })))
+        let options: Completion[] = [];
+        options = options.concat(sqlKeywords.map(keyword => ({ label: keyword, type: "keyword" })));
 
-        // Add table names
         if (schemaInfo) {
-            options = options.concat(Object.keys(schemaInfo).map(tableName => ({ label: tableName, type: "table" })))
+            options = options.concat(Object.keys(schemaInfo).map(tableName => ({
+                label: tableName,
+                type: "table"
+            })));
 
-            // Add column names if a table is selected
             const matchedTable = Object.keys(schemaInfo).find(tableName =>
                 context.state.doc.sliceString(0, context.pos).includes(tableName)
-            )
+            );
             if (matchedTable) {
-                options = options.concat(schemaInfo[matchedTable].columns.map(col => ({ label: col.name, type: "field" })))
+                options = options.concat(schemaInfo[matchedTable].columns.map(col => ({
+                    label: col.name,
+                    type: "field"
+                })));
             }
         }
 
@@ -242,8 +309,8 @@ export default function SQLSandbox() {
             from: before ? before.from : context.pos,
             options: options,
             validFor: /^\w*$/
-        }
-    }
+        };
+    };
 
     return (
         <div className="container mx-auto p-2 sm:p-4">
@@ -262,9 +329,6 @@ export default function SQLSandbox() {
                             </div>
                             <Button onClick={handleManualRefresh} size="sm" className="w-full sm:w-auto">
                                 <RefreshCw className="mr-2 h-4 w-4" /> Refresh Now
-                            </Button>
-                            <Button size="sm" className="w-full sm:w-auto bg-red-500 ">
-                                <LockKeyhole className="mr-2 h-4 w-4" /> Admin
                             </Button>
                         </div>
                     </CardTitle>
@@ -328,7 +392,6 @@ export default function SQLSandbox() {
                     )}
                 </CardContent>
             </Card>
-
             <Card className="mb-4">
                 <CardHeader>
                     <CardTitle>SQL Sandbox</CardTitle>
@@ -336,18 +399,28 @@ export default function SQLSandbox() {
                 <CardContent>
                     <div className="mb-4">
                         <label htmlFor="sqlQuery" className="block text-sm font-medium text-gray-700 mb-2">
-                            Enter your SQL query:
+                            Enter your SQL queries (separate multiple queries with semicolons):
+                        </label>
+                        <label className="block text-sm font-small text-gray-700 mb-2">
+                            <span className="bg-yellow-200/50 italic">Put cursor in query you want to run.</span>
                         </label>
                         <CodeMirror
                             value={sqlQuery}
                             height="150px"
                             extensions={[sql(), autocompletion({ override: [myCompletions] })]}
-                            onChange={(value) => setSqlQuery(value)}
+                            onChange={handleEditorChange}
+                            onUpdate={handleCursorActivity}
                             className="border rounded text-sm"
                         />
+                        <p className="text-sm text-gray-500 mt-1">
+                            {activeQuery ? 'Active query: ' + activeQuery : 'No query selected'}
+                        </p>
                     </div>
                     <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-4">
-                        <Button onClick={handleRunQuery} className="w-full sm:w-auto">Run Query</Button>
+                        <Button onClick={() => handleRunQuery()} className="w-full sm:w-auto">
+                            <Play className="mr-2 h-4 w-4" />
+                            Run {activeQuery ? 'Selected' : 'All'} Query
+                        </Button>
                         <Button onClick={handleResetDatabase} variant="outline" className="w-full sm:w-auto">
                             <RefreshCw className="mr-2 h-4 w-4" /> Reset Database
                         </Button>
@@ -356,34 +429,43 @@ export default function SQLSandbox() {
                         </Button>
                     </div>
                     <div className="mt-4">
-                        <h3 className="text-lg font-semibold mb-2">Query Result:</h3>
+                        <h3 className="text-lg font-semibold mb-2">Query Results:</h3>
                         {queryError && (
                             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                                 <span className="block sm:inline">{queryError}</span>
                             </div>
                         )}
-                        {queryResult && (
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            {queryResult.columns.map((column, index) => (
-                                                <TableHead key={index} className="text-xs sm:text-sm">{column}</TableHead>
-                                            ))}
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {queryResult.rows.map((row, rowIndex) => (
-                                            <TableRow key={rowIndex}>
-                                                {queryResult.columns.map((column, colIndex) => (
-                                                    <TableCell key={colIndex} className="text-xs sm:text-sm">{String(row[column])}</TableCell>
+                        {queryResults.map((result, index) => (
+                            <div key={index} className="mb-6">
+                                <div className="bg-gray-100 p-2 rounded mb-2">
+                                    <code className="text-sm">{result.query}</code>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                {result.columns.map((column, colIndex) => (
+                                                    <TableHead key={colIndex} className="text-xs sm:text-sm">
+                                                        {column}
+                                                    </TableHead>
                                                 ))}
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {result.rows.map((row, rowIndex) => (
+                                                <TableRow key={rowIndex}>
+                                                    {result.columns.map((column, colIndex) => (
+                                                        <TableCell key={colIndex} className="text-xs sm:text-sm">
+                                                            {String(row[column])}
+                                                        </TableCell>
+                                                    ))}
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
                             </div>
-                        )}
+                        ))}
                     </div>
                 </CardContent>
             </Card>
@@ -407,7 +489,9 @@ export default function SQLSandbox() {
                     </div>
                 </CardContent>
             </Card>
-            <p className="text-xs sm:text-sm text-gray-300" style={{textAlign: 'center', paddingTop: '3px'}}><a href='https://blond.dev'>blond.dev</a></p>
+            <p className="text-xs sm:text-sm text-gray-300" style={{ textAlign: 'center', paddingTop: '3px' }}>
+                <a href="https://blond.dev">blond.dev</a>
+            </p>
         </div>
-    )
+    );
 }
