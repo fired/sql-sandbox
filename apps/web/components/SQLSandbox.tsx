@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AlertCircle, Copy, RefreshCw } from 'lucide-react'
+import { AlertCircle, Copy, RefreshCw, LockKeyhole } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import CodeMirror from '@uiw/react-codemirror'
 import { sql } from '@codemirror/lang-sql'
@@ -262,6 +262,9 @@ export default function SQLSandbox() {
                             </div>
                             <Button onClick={handleManualRefresh} size="sm" className="w-full sm:w-auto">
                                 <RefreshCw className="mr-2 h-4 w-4" /> Refresh Now
+                            </Button>
+                            <Button size="sm" className="w-full sm:w-auto bg-red-500 ">
+                                <LockKeyhole className="mr-2 h-4 w-4" /> Admin
                             </Button>
                         </div>
                     </CardTitle>
