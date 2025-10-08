@@ -490,7 +490,7 @@ export default function SQLSandbox() {
                 </CardContent>
             </Card>
             <p className="text-xs sm:text-sm text-gray-300" style={{ textAlign: 'center', paddingTop: '3px' }}>
-                <a href="https://blond.dev">blond.dev</a>
+                <a href="https://evensonlabs.com">built by evensonlabs.com</a>
             </p>
         </div>
     );

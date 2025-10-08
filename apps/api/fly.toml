@@ -1,0 +1,35 @@
+# fly.toml app configuration file generated for api-white-water-964 on 2025-10-02T15:29:14-05:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'api-white-water-964'
+primary_region = 'ord'
+
+[build]
+
+[processes]
+  app = 'npm start'
+
+[[mounts]]
+  source = 'data'
+  destination = '/app/user_dbs'
+  auto_extend_size_threshold = 80
+  auto_extend_size_increment = '1GB'
+  auto_extend_size_limit = '10GB'
+
+[env]
+  PORT = '8080'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
